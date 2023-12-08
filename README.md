@@ -1,2 +1,3 @@
-### MESTO-REACT
-ссылка на gh-pages: https://lera4yu.github.io/mesto-react/
+### MESTO-REACT-AUTH
+
+Обновленный проект с возможностью регистрации.
