@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-const Register = ({onRegister}) => {
+const Register = ({ onRegister, isLoading }) => {
   const [formValue, setFormValue] = useState({
     username: '',
     email: ''
@@ -41,7 +41,7 @@ const Register = ({onRegister}) => {
           value={formValue.password}
           required={true}
           onChange={handleChange} />
-        <button className="authentication__form-submit-btn authentication__form-submit-btn_registered" type="submit">Зарегистрироваться</button>
+        <button className="authentication__form-submit-btn authentication__form-submit-btn_registered" type="submit">{isLoading ? "Регистрация..." : "Зарегистрироваться"}</button>
       </form>
       <div className="authentication__register">
         <p className="authentication__register-subtitle">Уже зарегистрированы?&nbsp;</p>

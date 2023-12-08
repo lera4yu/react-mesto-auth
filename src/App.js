@@ -39,6 +39,8 @@ function App() {
 
   const [cards, setCards] = React.useState([]);
 
+  const [isLoading, setLoading] = React.useState(false);
+
   const handleTokenCheck = () => {
     if (localStorage.getItem('jwt')) {
       const jwt = localStorage.getItem('jwt');
@@ -46,6 +48,7 @@ function App() {
         if (res) {
           setLoggedIn(true);
           navigate('/', { replace: true });
+          console.log(res.data, localStorage.getItem('jwt'), res);
           setUserEmail(res.data.email);
         }
         else {
@@ -58,9 +61,10 @@ function App() {
 
   React.useEffect(() => {
     handleTokenCheck();
-  }, []);
+  }, [loggedIn]);
 
   React.useEffect(() => {
+    if (loggedIn) {
     api.getUserInfo()
       .then((res) => {
         setCurrentUser(res);
@@ -68,7 +72,7 @@ function App() {
       .catch((err) =>
         console.log(`Получение информации о пользователе привело к ошибке ${err}`)
       )
-  }, []);
+  }}, [loggedIn]);
 
   React.useEffect(() => {
     api.getInitialCards()
@@ -80,6 +84,7 @@ function App() {
   }, []);
 
   function handleRegister(email, password) {
+    setLoading(true);
     auth.register(email, password)
       .then((res) => {
         if (res) {
@@ -92,23 +97,25 @@ function App() {
         console.log(`Попытка регистрации привела к ошибке ${err}`);
         setRegSuccess(false);
         setInfoToolTipOpen(true);
-      });
+      })
+      .finally((res) => setLoading(false));
   }
 
   function handleLogin(email, password) {
+    setLoading(true);
     auth.authorize(email, password)
       .then((data) => {
         setRegSuccess(true);
         setLoggedIn(true);
         navigate('/', { replace: true });
         localStorage.setItem('jwt', data.token);
-        handleTokenCheck();
       })
       .catch(err => {
         console.log(`Попытка входа привела к ошибке ${err}`);
         setRegSuccess(false);
         setInfoToolTipOpen(true);
-      });
+      })
+      .finally((res) => setLoading(false));
   }
 
   function handleEditAvatarClick() {
@@ -150,30 +157,36 @@ function App() {
   }
 
   function handleUpdateUser(userInfo) {
+    setLoading(true);
     api.setUserInfo(userInfo)
       .then((res) => setCurrentUser(res))
       .then((res) => closeAllPopups())
       .catch((err) => {
         console.log(`Обновление данных пользователя привело к ошибке ${err}`);
-      });
+      })
+      .finally((res) => setLoading(false));
   }
 
   function handleUpdateAvatar(avatar) {
+    setLoading(true);
     api.setUserAvatar(avatar)
       .then((res) => setCurrentUser(res))
       .then((res) => closeAllPopups())
       .catch((err) => {
         console.log(`Обновление аватара пользователя привело к ошибке ${err}`);
-      });
+      })
+      .finally((res) => setLoading(false));
   }
 
   function handleAddPlaceSubmit(card) {
+    setLoading(true);
     api.addNewCard(card)
       .then((newCard) => setCards([newCard, ...cards]))
       .then((res) => closeAllPopups())
       .catch((err) => {
         console.log(`Добавление новой карточки привело к ошибке ${err}`);
-      });
+      })
+      .finally((res) => setLoading(false));
   }
 
   React.useEffect(() => {
@@ -220,17 +233,17 @@ function App() {
           <Routes>
             <Route path="/" element={<ProtectedRouteElement element={Main} cards={cards} onEditProfile={handleEditProfileClick} onAddPlace={handleAddPlaceClick} onEditAvatar={handleEditAvatarClick}
               onCardClick={handleCardClick} onLikeClick={handleCardLike} onDeleteClick={handleCardDelete} loggedIn={loggedIn} />} />
-            <Route path="/sign-in" element={<Login handleLogin={handleLogin} />} />
-            <Route path="/sign-up" element={<Register onRegister={handleRegister} />} />
+            <Route path="/sign-in" element={<Login handleLogin={handleLogin} isLoading = {isLoading}/>} />
+            <Route path="/sign-up" element={<Register onRegister={handleRegister} isLoading = {isLoading}/>} />
           </Routes>
           <InfoTooltip isOpen={isInfoToolTipOpen} isSuccess={isRegSuccess} onClose={closeAllPopups} />
           {loggedIn && <Footer />}
-          <EditProfilePopup isOpen={isEditProfilePopupOpen} onClose={closeAllPopups} onUpdateUser={handleUpdateUser} />
-          <AddPlacePopup isOpen={isAddPlacePopupOpen} onClose={closeAllPopups} onAddNewPlace={handleAddPlaceSubmit} />
+          <EditProfilePopup isOpen={isEditProfilePopupOpen} onClose={closeAllPopups} onUpdateUser={handleUpdateUser} isLoading = {isLoading}/>
+          <AddPlacePopup isOpen={isAddPlacePopupOpen} onClose={closeAllPopups} onAddNewPlace={handleAddPlaceSubmit} isLoading = {isLoading}/>
           {selectedCard.name && selectedCard.link ? (<ImagePopup card={selectedCard} onClose={closeAllPopups} />) : null}
           <PopupWithForm name='delete-card' title='Вы уверены?' buttonText="Да" buttonClass=" btnPopup-delete-card" />
           <EditAvatarPopup isOpen={isEditAvatarPopupOpen} onClose={closeAllPopups}
-            onUpdateAvatar={handleUpdateAvatar} />
+            onUpdateAvatar={handleUpdateAvatar} isLoading = {isLoading}/>
         </div>
       </div>
     </CurrentUserContext.Provider>
