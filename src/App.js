@@ -48,7 +48,6 @@ function App() {
         if (res) {
           setLoggedIn(true);
           navigate('/', { replace: true });
-          console.log(res.data, localStorage.getItem('jwt'), res);
           setUserEmail(res.data.email);
         }
         else {
