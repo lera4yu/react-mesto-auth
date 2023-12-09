@@ -61,7 +61,7 @@ function App() {
 
   React.useEffect(() => {
     handleTokenCheck();
-  }, [loggedIn]);
+  }, []);
 
   React.useEffect(() => {
     if (loggedIn) {
@@ -107,6 +107,7 @@ function App() {
       .then((data) => {
         setRegSuccess(true);
         setLoggedIn(true);
+        setUserEmail(email);
         navigate('/', { replace: true });
         localStorage.setItem('jwt', data.token);
       })
